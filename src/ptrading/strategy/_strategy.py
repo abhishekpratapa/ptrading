@@ -1,6 +1,6 @@
 """
 # -*- coding: utf-8 -*-
-# Copyright © 2017 Abhishek Pratapa. All rights reserved.
+# Copyright © 2020 Abhishek Pratapa. All rights reserved.
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
@@ -30,6 +30,9 @@ class NoopStragegy(StrategyBase):
 
 	def process_bar(self, state, bars: BarList, add_order, cancel_order):
 		from ..simulator import OrderSide as _OrderSide
+		# signal 1
+		# signal 2
+		# process all signals
 
 		if self.index == 2:
 			add_order(bars[0], _OrderSide.BUY, 186.50, 10)
