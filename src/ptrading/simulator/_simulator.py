@@ -29,68 +29,68 @@ ClosePolicyList = _List[_ClosePolicy]
 UserStateCheckpointList = _List[_UserStateCheckpoint]
 
 class Simulator:
-	EPSILON = 0.05
-	def __init__(self, config: _Config, user_config: _UserConfig,
-				 strategy: _StrategyBase, data_source: _DataSourceBase,
-				 close_policy_list: ClosePolicyList):
-		self.config = config
-		self.user_config = user_config
-		self.user_state = _UserState(self.user_config.principal)
-		self.strategy = strategy
-		self.data_source = data_source
-		self.close_policy_list = close_policy_list
+    EPSILON = 0.05
+    def __init__(self, config: _Config, user_config: _UserConfig,
+                 strategy: _StrategyBase, data_source: _DataSourceBase,
+                 close_policy_list: ClosePolicyList):
+        self.config = config
+        self.user_config = user_config
+        self.user_state = _UserState(self.user_config.principal)
+        self.strategy = strategy
+        self.data_source = data_source
+        self.close_policy_list = close_policy_list
 
-		self.user_state_checkpoints: UserStateCheckpointList = []
+        self.user_state_checkpoints: UserStateCheckpointList = []
 
-	def _get_average_time(self, bars: BarList):
-		return bars[0].timestamp
+    def _get_average_time(self, bars: BarList):
+        return bars[0].timestamp
 
-	def add_order(self, bar: _Bar, order_side: _OrderSide, price: float,
-				  num_shares: int) -> bool:
-		if price <= 0 or num_shares <= 0:
-			return False
-		if order_side == _OrderSide.BUY and ((bar.close - Simulator.EPSILON) < price):
-			return False
-		if order_side == _OrderSide.SELL and ((bar.close + Simulator.EPSILON) > price):
-			return False
+    def add_order(self, bar: _Bar, order_side: _OrderSide, price: float,
+                  num_shares: int) -> bool:
+        if price <= 0 or num_shares <= 0:
+            return False
+        if order_side == _OrderSide.BUY and ((bar.close - Simulator.EPSILON) < price):
+            return False
+        if order_side == _OrderSide.SELL and ((bar.close + Simulator.EPSILON) > price):
+            return False
 
-		# TODO: Check if order exceeds purchasing power
-		new_order = _Order(bar, price, order_side, num_shares)
-		self.user_state.orders.append(new_order)
+        # TODO: Check if order exceeds purchasing power
+        new_order = _Order(bar, price, order_side, num_shares)
+        self.user_state.orders.append(new_order)
 
-		return True
+        return True
 
-	def cancel_order(self, order: _Order):
-		order_index = 0
-		try:
-			order_index = self.user_state.orders.index(order)
-		except:
-			return False
-		return self.user_state.orders[order_index].cancel()
+    def cancel_order(self, order: _Order):
+        order_index = 0
+        try:
+            order_index = self.user_state.orders.index(order)
+        except:
+            return False
+        return self.user_state.orders[order_index].cancel()
 
-	def process_strategy(self, bars: BarList):
-		self.strategy.process_bar(self.user_state, bars, self.add_order, self.cancel_order)
+    def process_strategy(self, bars: BarList):
+        self.strategy.process_bar(self.user_state, bars, self.add_order, self.cancel_order)
 
-	def process_closing_policies(self, bars: BarList):
-		for p in self.close_policy_list:
-			p.process_bar(self.user_state, bars, self.add_order, self.cancel_order)
+    def process_closing_policies(self, bars: BarList):
+        for p in self.close_policy_list:
+            p.process_bar(self.user_state, bars, self.add_order, self.cancel_order)
 
-	def process_user_state(self, bars: BarList):
-		self.user_state.update(bars)
+    def process_user_state(self, bars: BarList):
+        self.user_state.update(bars)
 
-		account_value = self.user_state.get_account_value(bars)
-		cash_value = self.user_state.get_cash_value()
-		purchasing_power = self.user_state.get_purchasing_power()
+        account_value = self.user_state.get_account_value(bars)
+        cash_value = self.user_state.get_cash_value()
+        purchasing_power = self.user_state.get_purchasing_power()
 
-		timestamp = self._get_average_time(bars)
+        timestamp = self._get_average_time(bars)
 
-		new_user_checkpoint = _UserStateCheckpoint(account_value, cash_value, purchasing_power, timestamp)
-		self.user_state_checkpoints.append(new_user_checkpoint)
+        new_user_checkpoint = _UserStateCheckpoint(account_value, cash_value, purchasing_power, timestamp)
+        self.user_state_checkpoints.append(new_user_checkpoint)
 
-	def start(self):
-		if(self.data_source.reset()):
-			while(self.data_source.has_next()):
-				datum = self.data_source.next()
-				self.process_strategy(datum)
-				self.process_closing_policies(datum)
-				self.process_user_state(datum)
+    def start(self):
+        if(self.data_source.reset()):
+            while(self.data_source.has_next()):
+                datum = self.data_source.next()
+                self.process_strategy(datum)
+                self.process_closing_policies(datum)
+                self.process_user_state(datum)

@@ -6,32 +6,35 @@
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
 """
 
-import pathlib
-from setuptools import setup
+import os 
+from setuptools import setup, find_packages
 
 # The directory containing this file
-HERE = pathlib.Path(__file__).parent
+HERE = os.path.dirname(os.path.realpath(__file__))
 
-# The text of the README file
-README = (HERE / "README.md").read_text()
-
-# The text of the LICENSE file
-LICENSE = (HERE / "LICENSE.md").read_text()
+FILE_PATH = HERE + "/README.md"
+README = None
+with open(FILE_PATH) as file:
+    README = file.read()
 
 # This call to setup() does all the work
 setup(
     name="ptrading",
-    packages=["ptrading"],
-    package_dir={"ptrading": "src"},
-    version="0.0.1a1",
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
+    version="0.0.1.0a2",
     description="Trading Tools written on top of the Alpaca API",
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/abhishekpratapa/ptrading",
     author="Abhishek Pratapa",
     author_email="abhishekpratapa@gmail.com",
-    license=LICENSE,
+    license="BSD-3-Clause",
     include_package_data=True,
+    install_requires=[
+        "alpaca-trade-api==0.51.0",
+        "numpy==1.18.5"
+    ],
     classifiers=[
         "Development Status :: 1 - Planning",
         "Intended Audience :: Developers",

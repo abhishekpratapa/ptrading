@@ -20,9 +20,9 @@ from typing import List as _List
 BarList = _List[_Bar]
 
 class ClosePolicy(ABC):
-	def __init__(self, config : _Config):
-		self.config = config
+    def __init__(self, config : _Config):
+        self.config = config
 
-	@abstractmethod
-	def process_bar(self, state, bar: BarList, add_order, cancel_order):
-		return
+    @abstractmethod
+    def process_bar(self, state, bar: BarList, add_order, cancel_order):
+        return

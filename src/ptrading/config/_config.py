@@ -19,15 +19,15 @@ from typing import List as _List
 TickerType = _List[str]
 
 class Config:
-	def __init__(self, tickers: TickerType, pre_market: bool,
-				 time_unit: _TimeUnit, start_time: _datetime,
-				 end_time: _datetime):
-		self.tickers: TickerType = tickers
-		self.pre_market: bool = pre_market
-		self.time_unit: _TimeUnit  = time_unit
-		self.start_time: _datetime = start_time
-		self.end_time: _datetime = end_time
+    def __init__(self, tickers: TickerType, pre_market: bool,
+                 time_unit: _TimeUnit, start_time: _datetime,
+                 end_time: _datetime):
+        self.tickers: TickerType = tickers
+        self.pre_market: bool = pre_market
+        self.time_unit: _TimeUnit  = time_unit
+        self.start_time: _datetime = start_time
+        self.end_time: _datetime = end_time
 
 class UserConfig:
-	def __init__(self, principal: float):
-		self.principal: float = principal
+    def __init__(self, principal: float):
+        self.principal: float = principal
