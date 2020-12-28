@@ -1,2 +1,5 @@
 alpaca-trade-api==0.51.0
+codecov==2.1.11
 numpy==1.18.5
+pytest==6.2.1
+pytest-cov==2.10.1
