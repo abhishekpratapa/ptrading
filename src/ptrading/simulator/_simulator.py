@@ -45,16 +45,33 @@ class Simulator:
     def _get_average_time(self, bars: BarList):
         return bars[0].timestamp
 
+    def _check_order_purchasing_power(self, order_side: _OrderSide, price: float,
+                                      num_shares: int):
+        if order_side == _OrderSide.BUY:
+            purchasing_power = self.user_state.get_purchasing_power()
+            return purchasing_power > (price * num_shares)
+        else:
+            return True
+
     def add_order(self, bar: _Bar, order_side: _OrderSide, price: float,
                   num_shares: int) -> bool:
         if price <= 0 or num_shares <= 0:
             return False
+
         if order_side == _OrderSide.BUY and ((bar.close - Simulator.EPSILON) < price):
             return False
+
         if order_side == _OrderSide.SELL and ((bar.close + Simulator.EPSILON) > price):
             return False
 
-        # TODO: Check if order exceeds purchasing power
+        if not self._check_order_purchasing_power(order_side, price, num_shares):
+            return False
+
+        if order_side == _OrderSide.SELL:
+            alloted_num_shares = self.user_state.get_order_diff(bar.ticker)
+            if num_shares > alloted_num_shares:
+                return False
+
         new_order = _Order(bar, price, order_side, num_shares)
         self.user_state.orders.append(new_order)
 
@@ -78,7 +95,7 @@ class Simulator:
     def process_user_state(self, bars: BarList):
         self.user_state.update(bars)
 
-        account_value = self.user_state.get_account_value(bars)
+        account_value = self.user_state.get_account_value()
         cash_value = self.user_state.get_cash_value()
         purchasing_power = self.user_state.get_purchasing_power()
 
@@ -87,10 +104,11 @@ class Simulator:
         new_user_checkpoint = _UserStateCheckpoint(account_value, cash_value, purchasing_power, timestamp)
         self.user_state_checkpoints.append(new_user_checkpoint)
 
+    def data_callback(self, datum: BarList):
+        self.process_user_state(datum)
+        self.process_strategy(datum)
+        self.process_closing_policies(datum)
+
     def start(self):
-        if(self.data_source.reset()):
-            while(self.data_source.has_next()):
-                datum = self.data_source.next()
-                self.process_strategy(datum)
-                self.process_closing_policies(datum)
-                self.process_user_state(datum)
+        self.data_source.set_callback(self.data_callback)
+        self.data_source.start_feed()

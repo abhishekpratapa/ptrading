@@ -27,6 +27,7 @@ class UserState:
     def __init__(self, principal: float):
         self.principal: float = principal
         self.orders: OrderList = []
+        self.bar_state = {}
 
     def _get_volume(self, orders: OrderList) -> int:
         volume = 0
@@ -41,7 +42,18 @@ class UserState:
             price += ((1.0 * o.num_shares * o.price) / volume)
         return price
 
-    def _value_helper(self, bars: BarList, include_open: bool) -> float:
+    def get_order_diff(self, ticker: str):
+        filtered_orders = list(filter(lambda o: o.bar.ticker == ticker, self.orders))
+
+        buy_orders = list(filter(lambda o: o.order_side == _OrderSide.BUY, filtered_orders))
+        sell_orders = list(filter(lambda o: o.order_side == _OrderSide.SELL, filtered_orders))
+
+        buy_volume = self._get_volume(buy_orders)
+        sell_volume = self._get_volume(sell_orders)
+
+        return buy_volume - sell_volume
+
+    def _value_helper(self, include_open: bool) -> float:
         filled_orders = list(filter(lambda o: o.order_status == _OrderStatus.FILLED, self.orders))
         filled_tickers = [fo.bar.ticker for fo in filled_orders]
         filled_tickers = list(list(set(filled_tickers)))
@@ -61,10 +73,9 @@ class UserState:
                 realized_profit = (sell_price - buy_price) * sell_volume
                 if include_open:
                     buy_open_diff = buy_volume - sell_volume
-                    for b in bars:
-                        if b.ticker == ft:
-                            realized_profit += ((b.close - buy_price) * buy_open_diff)
-                            break
+                    b = self.bar_state[ft]
+                    if b != None:
+                        realized_profit += ((b.close - buy_price) * buy_open_diff)
                 else:
                     buy_open_diff = buy_volume - sell_volume
                     total -= (buy_open_diff * buy_price)
@@ -73,10 +84,9 @@ class UserState:
                 realized_profit = (sell_price - buy_price) * buy_volume
                 if include_open:
                     sell_open_diff = sell_volume - buy_volume
-                    for b in bars:
-                        if b.ticker == ft:
-                            realized_profit += ((sell_price - b.close) * sell_open_diff)
-                            break
+                    b = self.bar_state[ft]
+                    if b != None:
+                        realized_profit += ((sell_price - b.close) * sell_open_diff)
                 else:
                     sell_open_diff = sell_volume - buy_volume
                     total -= (sell_open_diff * sell_price)
@@ -86,19 +96,20 @@ class UserState:
 
     def update(self, bars: BarList):
         open_orders = list(filter(lambda o: o.order_status == _OrderStatus.OPEN, self.orders))
-        for o in open_orders:
-            for b in bars:
+        for b in bars:
+            self.bar_state[b.ticker] = b
+            for o in open_orders:
                 if o.bar.ticker == b.ticker:
-                    if o.order_side == _OrderSide.BUY and ((b.close - UserState.EPSILON) > o.price):
+                    if o.order_side == _OrderSide.BUY and ((b.close - UserState.EPSILON) < o.price):
                         o.order_status = _OrderStatus.FILLED
-                    elif o.order_side == _OrderSide.SELL and ((b.close + UserState.EPSILON) < o.price):
+                    elif o.order_side == _OrderSide.SELL and ((b.close + UserState.EPSILON) > o.price):
                         o.order_status = _OrderStatus.FILLED
 
-    def get_account_value(self, bars: BarList) -> float:
-        return self._value_helper(bars, True)
+    def get_account_value(self) -> float:
+        return self._value_helper(True)
 
     def get_cash_value(self) -> float:
-        return self._value_helper(None, False)
+        return self._value_helper(False)
 
     def get_purchasing_power(self) -> float:
         open_orders = list(filter(lambda o: o.order_status == _OrderStatus.OPEN, self.orders))

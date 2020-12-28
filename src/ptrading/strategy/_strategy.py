@@ -34,14 +34,17 @@ class NoopStragegy(StrategyBase):
 
     def process_bar(self, state, bars: BarList, add_order, cancel_order):
         from ..simulator import OrderSide as _OrderSide
-        # signal 1
-        # signal 2
-        # process all signals
 
-        if self.index == 2:
+        if self.index == 0:
+            add_order(bars[0], _OrderSide.SELL, 400, 10)
+
+        if self.index == 4:
             add_order(bars[0], _OrderSide.BUY, 186.50, 10)
 
-        if self.index == 3000:
-            add_order(bars[0], _OrderSide.BUY, 170.0, 100)
+        if self.index == 200:
+            add_order(bars[0], _OrderSide.BUY, 150, 10)
+
+        if self.index == 300:
+            add_order(bars[0], _OrderSide.BUY, 186.50, 1000)
 
         self.index += 1
