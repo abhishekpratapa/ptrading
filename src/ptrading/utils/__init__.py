@@ -11,3 +11,4 @@ from __future__ import division as _
 from __future__ import absolute_import as _
 
 from ._time import TimeUnit
+from ._buffer import CircularBuffer

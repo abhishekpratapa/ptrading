@@ -9,3 +9,6 @@
 from __future__ import print_function as _
 from __future__ import division as _
 from __future__ import absolute_import as _
+
+from ._signal import SignalBase
+from ._basic import MovingAverage

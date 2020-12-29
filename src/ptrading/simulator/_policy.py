@@ -24,5 +24,5 @@ class ClosePolicy(ABC):
         self.config = config
 
     @abstractmethod
-    def process_bar(self, state, bar: BarList, add_order, cancel_order):
+    def process_bar(self, state, bars: BarList, add_order, cancel_order):
         return

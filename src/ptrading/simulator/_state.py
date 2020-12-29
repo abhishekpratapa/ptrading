@@ -60,14 +60,14 @@ class UserState:
 
         total = self.principal
         for ft in filled_tickers:
-            buy_orders = list(filter(lambda o: o.order_side == _OrderSide.BUY, filled_orders))
-            sell_orders = list(filter(lambda o: o.order_side == _OrderSide.SELL, filled_orders))
+            buy_orders = list(filter(lambda o: o.order_side == _OrderSide.BUY and o.bar.ticker == ft, filled_orders))
+            sell_orders = list(filter(lambda o: o.order_side == _OrderSide.SELL and o.bar.ticker == ft, filled_orders))
             
             buy_volume = self._get_volume(buy_orders)
             buy_price = self._get_price(buy_orders)
 
             sell_volume = self._get_volume(sell_orders)
-            sell_price = self._get_volume(sell_orders)
+            sell_price = self._get_price(sell_orders)
 
             if buy_volume > sell_volume:
                 realized_profit = (sell_price - buy_price) * sell_volume

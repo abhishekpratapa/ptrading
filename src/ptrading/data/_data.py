@@ -145,7 +145,6 @@ class AlpacaDataSource(DataSourceBase):
     def current(self) -> BarList:
         return [ self.buffer_bar[self.cursor] ]
 
-
     def set_callback(self, data_callback):
         self.data_callback = data_callback
         if self.live:
