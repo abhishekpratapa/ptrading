@@ -33,7 +33,8 @@ setup(
     include_package_data=True,
     install_requires=[
         "alpaca-trade-api==0.51.0",
-        "numpy==1.18.5"
+        "numpy==1.18.5",
+        "nest-asyncio==1.4.3"
     ],
     classifiers=[
         "Development Status :: 1 - Planning",
