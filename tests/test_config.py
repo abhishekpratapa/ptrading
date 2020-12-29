@@ -1,4 +1,5 @@
 import ptrading
+import datetime
 
 def test_config_init():
 	time_unit = ptrading.utils.TimeUnit.ONE_MINUTE
