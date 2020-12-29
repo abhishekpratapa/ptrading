@@ -22,7 +22,7 @@ setup(
     name="ptrading",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
-    version="0.0.1.0a2",
+    version="0.0.1.0a3",
     description="Trading Tools written on top of the Alpaca API",
     long_description=README,
     long_description_content_type="text/markdown",
